@@ -1,7 +1,7 @@
 const Listing = require("../models/listing.js");
 const mbxGeocoding = require('@mapbox/mapbox-sdk/services/geocoding');
 const mapToken = process.env.MAP_TOKEN;
-const geocodingClient = mbxGeocoding({ accessToken: mapToken });
+const geocodingClient = mapToken ? mbxGeocoding({ accessToken: mapToken }) : null;
 
 module.exports.index = async(req,res)=>{
     const allListings=await Listing.find({});
@@ -25,6 +25,9 @@ module.exports.showListing = async (req,res)=>{
 
 module.exports.createListing = async(req,res)=>{
     // let {title ,description,image,price,country,location}=req.body;
+    if (!geocodingClient) {
+        throw new Error("MAP_TOKEN is required to create listings");
+    }
 
    let response = await geocodingClient.forwardGeocode({
   query: req.body.listing.location,
